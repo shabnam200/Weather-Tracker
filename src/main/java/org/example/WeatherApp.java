@@ -201,7 +201,7 @@ public class WeatherApp {
     }
     private void fetchForecast(double lat, double lon) {
         try {
-           String urlString = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat
+            String urlString = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat
                     + "&lon=" + lon
                     + "&exclude=current,minutely,hourly,alerts"
                     + "&units=metric&appid=" + API_KEY;

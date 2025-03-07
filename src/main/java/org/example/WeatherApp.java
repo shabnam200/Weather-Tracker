@@ -201,12 +201,9 @@ public class WeatherApp {
     }
     private void fetchForecast(double lat, double lon) {
         try {
-            String urlString = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat
+            String urlString = "https://api.openweathermap.org/data/2.5/forecast?lat=" + lat
                     + "&lon=" + lon
-                    + "&exclude=current,minutely,hourly,alerts"
                     + "&units=metric&appid=" + API_KEY;
-
-
 
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -229,19 +226,34 @@ public class WeatherApp {
             JSONObject jsonResponse = new JSONObject(response.toString());
             forecastPanel.removeAll();
 
-            for (int i = 0; i < 7; i++) {  // Fetch 7 days correctly
-                JSONObject dayData = jsonResponse.getJSONArray("daily").getJSONObject(i);
-                double dayTemp = dayData.getJSONObject("temp").getDouble("day");
-                String weatherDesc = dayData.getJSONArray("weather").getJSONObject(0).getString("description");
+            // Extract forecast data for the next 7 days
+            JSONObject[] dailyData = new JSONObject[5];
+            double[] dailyTemps = new double[5];
+            String[] dailyWeather = new String[5];
 
+            // Group data by day
+            for (int i = 0; i < jsonResponse.getJSONArray("list").length(); i++) {
+                JSONObject entry = jsonResponse.getJSONArray("list").getJSONObject(i);
+                String date = entry.getString("dt_txt").split(" ")[0]; // Extract only the date
+                int dayIndex = i / 8; // 8 entries per day (3-hour intervals)
+
+                if (dayIndex < 5) {
+                    dailyData[dayIndex] = entry;
+                    dailyTemps[dayIndex] = entry.getJSONObject("main").getDouble("temp");
+                    dailyWeather[dayIndex] = entry.getJSONArray("weather").getJSONObject(0).getString("description");
+                }
+            }
+
+            // Update UI with 7-day forecast
+            for (int i = 0; i < 5; i++) {
                 JPanel dayPanel = new JPanel();
                 dayPanel.setPreferredSize(new Dimension(100, 100));
                 dayPanel.setBackground(new Color(135, 206, 250));
                 dayPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
                 JLabel dayLabel = new JLabel("Day " + (i + 1));
-                JLabel tempLabel = new JLabel(dayTemp + "°C");
-                JLabel descLabel = new JLabel(weatherDesc);
+                JLabel tempLabel = new JLabel(dailyTemps[i] + "°C");
+                JLabel descLabel = new JLabel(dailyWeather[i]);
 
                 dayPanel.setLayout(new GridLayout(3, 1));
                 dayPanel.add(dayLabel);
@@ -251,18 +263,19 @@ public class WeatherApp {
                 forecastPanel.add(dayPanel);
             }
 
-            forecastPanel.revalidate();
-            forecastPanel.repaint();
-            frame.revalidate();
-            frame.repaint();
-
-
+            SwingUtilities.invokeLater(() -> {
+                forecastPanel.revalidate();
+                forecastPanel.repaint();
+                frame.revalidate();
+                frame.repaint();
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(frame, "Error fetching forecast data.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     public static void main(String[] args) {
         new WeatherApp();

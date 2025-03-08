@@ -56,7 +56,7 @@ public class WeatherApp {
         // Forecast panel
         forecastPanel = new JPanel();
         forecastPanel.setLayout(new GridLayout(1, 7, 10, 10));
-        forecastPanel.setBorder(BorderFactory.createTitledBorder("Next 7 Days →"));
+        forecastPanel.setBorder(BorderFactory.createTitledBorder("Next 5 Days →"));
         forecastPanel.setBackground(new Color(173, 216, 230));
 
         for (int i = 0; i < 7; i++) {

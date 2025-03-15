@@ -264,7 +264,7 @@ public class WeatherApp {
             JSONObject jsonResponse = new JSONObject(response.toString());
             forecastPanel.removeAll();
 
-            // Extract forecast data for the next 7 days
+            // Extract forecast data for the next 5 days
             JSONObject[] dailyData = new JSONObject[5];
             double[] dailyTemps = new double[5];
             String[] dailyWeather = new String[5];
@@ -282,7 +282,7 @@ public class WeatherApp {
                 }
             }
 
-            // Update UI with 7-day forecast
+            // Update UI with 5-day forecast
             for (int i = 0; i < 5; i++) {
                 JPanel dayPanel = new JPanel();
                 dayPanel.setPreferredSize(new Dimension(100, 100));

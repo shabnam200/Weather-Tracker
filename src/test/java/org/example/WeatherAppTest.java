@@ -22,17 +22,7 @@ class WeatherAppTest {
 
     @BeforeEach
     void setUp() {
-        weatherApp = new WeatherApp() {
-            @Override
-            protected InputStream getApiResponse(String apiUrl) {
-                return null;
-            }
-
-            @Override
-            protected void initializeUI() {
-                // UI Initialization Mock
-            }
-        };
+        weatherApp = new WeatherApp() {};
     }
 
     @Test

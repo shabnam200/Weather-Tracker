@@ -4,19 +4,27 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import org.json.JSONObject;
 
-public class WeatherApp {
+public abstract class WeatherApp {
     private static final String API_KEY = "8a6db5d1f2e4b181f32fe33ada27c85f";
 
     private JFrame frame;
-    private JTextField cityField;
-    private JLabel tempLabel, weatherLabel, airQualityLabel, humidityLabel, windLabel, pressureLabel, visibilityLabel;
-    private JPanel mainPanel, forecastPanel;
+    JTextField cityField;
+    JLabel tempLabel;
+    JLabel weatherLabel;
+    JLabel airQualityLabel;
+    JLabel humidityLabel;
+    JLabel windLabel;
+    JLabel pressureLabel;
+    JLabel visibilityLabel;
+    private JPanel mainPanel;
+    JPanel forecastPanel;
 
     public WeatherApp() {
         frame = new JFrame("Weather Forecast");
@@ -93,14 +101,27 @@ public class WeatherApp {
         frame.setVisible(true);
     }
 
-    private void fetchWeather(String city) {
+    void fetchWeather(String city) {
         try {
             // Fetch weather details
             String urlString = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + API_KEY + "&units=metric";
+
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
+            int responseCode = connection.getResponseCode();
+
+            // Handle HTTP error responses
+            if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                throw new Exception("404: City not found");
+            } else if (responseCode == HttpURLConnection.HTTP_BAD_REQUEST) {
+                throw new Exception("400: Bad Request");
+            } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new Exception("Unexpected error occurred: " + responseCode);
+            }
+
+            // Read the response
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
             String line;
@@ -110,6 +131,8 @@ public class WeatherApp {
             reader.close();
 
             JSONObject jsonResponse = new JSONObject(response.toString());
+
+            // Check if API response is successful
             if (jsonResponse.getInt("cod") == 200) {
                 String weather = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description");
                 double temp = jsonResponse.getJSONObject("main").getDouble("temp");
@@ -135,16 +158,17 @@ public class WeatherApp {
                 // Fetch 7-day forecast
                 fetchForecast(lat, lon);
             } else {
-                JOptionPane.showMessageDialog(frame, "City not found!", "Error", JOptionPane.ERROR_MESSAGE);
+                throw new Exception("Unexpected API response: " + jsonResponse.getInt("cod"));
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Error fetching weather data.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Error fetching weather data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void fetchAirQuality(double lat, double lon) {
+
+    void fetchAirQuality(double lat, double lon) {
         try {
             String urlString = "http://api.openweathermap.org/data/2.5/air_pollution?lat=" + lat + "&lon=" + lon + "&appid=" + API_KEY;
             URL url = new URL(urlString);
@@ -201,7 +225,7 @@ public class WeatherApp {
             e.printStackTrace();
         }
     }
-    private void fetchForecast(double lat, double lon) {
+    void fetchForecast(double lat, double lon) {
         try {
             String urlString = "https://api.openweathermap.org/data/2.5/forecast?lat=" + lat
                     + "&lon=" + lon
@@ -280,6 +304,22 @@ public class WeatherApp {
 
 
     public static void main(String[] args) {
-        new WeatherApp();
+        new WeatherApp() {
+            @Override
+            protected InputStream getApiResponse(String apiUrl) {
+                return null;
+            }
+
+            @Override
+            protected void initializeUI() {
+
+            }
+        };
     }
+
+    protected abstract InputStream getApiResponse(String apiUrl);
+
+    protected abstract void initializeUI();
 }
+
+

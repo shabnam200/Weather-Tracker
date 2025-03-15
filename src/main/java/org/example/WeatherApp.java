@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import org.json.JSONObject;
 
-public abstract class WeatherApp {
+public class WeatherApp {
     private static final String API_KEY = "8a6db5d1f2e4b181f32fe33ada27c85f";
 
     private JFrame frame;
@@ -188,12 +188,23 @@ public abstract class WeatherApp {
 
             String airQualityDescription;
             switch (airQualityIndex) {
-                case 1: airQualityDescription = "Good"; break;
-                case 2: airQualityDescription = "Fair"; break;
-                case 3: airQualityDescription = "Moderate"; break;
-                case 4: airQualityDescription = "Poor"; break;
-                case 5: airQualityDescription = "Very Poor"; break;
-                default: airQualityDescription = "Unknown";
+                case 1:
+                    airQualityDescription = "Good";
+                    break;
+                case 2:
+                    airQualityDescription = "Fair";
+                    break;
+                case 3:
+                    airQualityDescription = "Moderate";
+                    break;
+                case 4:
+                    airQualityDescription = "Poor";
+                    break;
+                case 5:
+                    airQualityDescription = "Very Poor";
+                    break;
+                default:
+                    airQualityDescription = "Unknown";
             }
 
             airQualityLabel.setText("Air Quality: " + airQualityDescription);
@@ -225,6 +236,7 @@ public abstract class WeatherApp {
             e.printStackTrace();
         }
     }
+
     void fetchForecast(double lat, double lon) {
         try {
             String urlString = "https://api.openweathermap.org/data/2.5/forecast?lat=" + lat
@@ -304,22 +316,9 @@ public abstract class WeatherApp {
 
 
     public static void main(String[] args) {
-        new WeatherApp() {
-            @Override
-            protected InputStream getApiResponse(String apiUrl) {
-                return null;
-            }
+        new WeatherApp() {};
 
-            @Override
-            protected void initializeUI() {
-
-            }
-        };
     }
-
-    protected abstract InputStream getApiResponse(String apiUrl);
-
-    protected abstract void initializeUI();
 }
 
 
